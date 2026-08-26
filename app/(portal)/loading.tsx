@@ -1,0 +1,1 @@
+export default function PortalLoading() { return <div className="space-y-5 animate-pulse"><div className="h-4 w-28 rounded bg-slate-200"/><div className="h-12 w-2/3 rounded bg-slate-200"/><div className="grid gap-4 sm:grid-cols-3">{[1,2,3].map(item => <div key={item} className="h-32 rounded-2xl bg-white"/>)}</div></div>; }

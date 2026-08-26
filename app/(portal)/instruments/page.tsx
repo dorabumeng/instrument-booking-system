@@ -1,0 +1,4 @@
+import InstrumentGrid from "@/components/InstrumentGrid";
+import PageIntro from "@/components/PageIntro";
+import { getInstruments } from "@/lib/instruments/queries";
+export default async function InstrumentsPage() { const result = await getInstruments(); return <><PageIntro eyebrow="Core facilities" title="Find an instrument" description="Review live availability, capabilities, and booking calendars for shared laboratory equipment." />{!result.data ? <div role="alert" className="card p-8 text-center"><h2 className="text-lg font-bold">Instruments are unavailable</h2><p className="mt-2 text-slate-500">{result.error} Please try again shortly.</p></div> : result.data.length ? <InstrumentGrid instruments={result.data} /> : <div className="card p-10 text-center"><h2 className="text-lg font-bold">No instruments yet</h2><p className="mt-2 text-sm text-slate-500">An administrator needs to add the laboratory’s first instrument.</p></div>}</>; }

@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+:root { --ink: #102a2b; --teal: #087f75; --mint: #dff5ef; --paper: #f5f8f7; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: Arial, Helvetica, sans-serif; }
+button, input, select, textarea { font: inherit; }
+.card { border: 1px solid #dce7e4; border-radius: 1rem; background: white; box-shadow: 0 8px 30px rgba(16,42,43,.05); }
+.eyebrow { color: #087f75; font-size: .72rem; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+.page-title { font-size: clamp(1.9rem, 4vw, 3.1rem); font-weight: 750; letter-spacing: -.045em; line-height: 1.05; }
+.btn-primary { display: inline-flex; align-items: center; justify-content: center; border-radius: .75rem; background: #087f75; color: white; padding: .75rem 1rem; font-weight: 700; transition: background .2s; }
+.btn-primary:hover { background: #06665e; }
+.btn-secondary { display: inline-flex; align-items: center; justify-content: center; border: 1px solid #cadbd7; border-radius: .75rem; background: white; padding: .7rem 1rem; font-weight: 700; }
+.status { display: inline-flex; align-items: center; gap: .4rem; border-radius: 999px; padding: .3rem .65rem; font-size: .76rem; font-weight: 750; }
+.status::before { content: ""; width: .45rem; height: .45rem; border-radius: 50%; background: currentColor; }
+.status-available { color: #087f5b; background: #e3f8ef; }
+.status-maintenance { color: #a15c00; background: #fff1d5; }
+.status-unavailable { color: #b42318; background: #fee7e5; }
+.calendar-wrap .fc { --fc-border-color: #dce7e4; --fc-button-bg-color: #087f75; --fc-button-border-color: #087f75; --fc-button-hover-bg-color: #06665e; --fc-button-hover-border-color: #06665e; --fc-button-active-bg-color: #06564f; --fc-today-bg-color: #effaf7; font-size: .9rem; }
+.calendar-wrap .fc .fc-toolbar { gap: .75rem; flex-wrap: wrap; }
+.calendar-wrap .fc .fc-toolbar-title { font-size: 1.1rem; }
+.calendar-wrap .fc .fc-button { border-radius: .55rem; font-weight: 700; }
+.calendar-wrap .fc-event { border-radius: .35rem; padding: 1px 3px; cursor: pointer; }
+@media (max-width: 640px) { .calendar-wrap .fc .fc-toolbar { align-items: stretch; flex-direction: column; } .calendar-wrap .fc .fc-toolbar-chunk { display: flex; justify-content: center; } .calendar-wrap .fc { font-size: .75rem; } }

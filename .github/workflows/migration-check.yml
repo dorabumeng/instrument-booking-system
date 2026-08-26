@@ -1,0 +1,16 @@
+name: Migration chain check
+on:
+  workflow_dispatch:
+  pull_request:
+    paths: ["supabase/migrations/**", "supabase/config.toml", "supabase/seed.sql"]
+permissions:
+  contents: read
+jobs:
+  reset-empty-database:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with: { version: latest }
+      - run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor
+      - run: supabase db reset --local --no-seed

@@ -1,0 +1,1 @@
+export default function BookingsLoading() { return <div className="animate-pulse"><div className="mb-8 h-12 w-64 rounded bg-slate-200"/><div className="card space-y-5 p-7">{[1,2,3].map(item => <div key={item} className="h-24 rounded-xl bg-slate-100"/>)}</div></div>; }

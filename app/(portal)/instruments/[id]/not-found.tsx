@@ -1,0 +1,2 @@
+import Link from "next/link";
+export default function InstrumentNotFound() { return <div className="card mx-auto max-w-lg p-10 text-center"><p className="eyebrow">Not found</p><h1 className="mt-3 text-2xl font-bold">Instrument not found</h1><p className="mt-3 text-slate-600">This instrument may have been removed or the link may be incorrect.</p><Link href="/instruments" className="btn-primary mt-6">Browse instruments</Link></div>; }

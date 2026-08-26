@@ -1,0 +1,5 @@
+"use server";
+import { revalidatePath } from "next/cache";
+import { createClient } from "@/lib/supabase/server";
+export type ProfileState = { status: "idle" | "error" | "success"; message: string };
+export async function updateProfile(_: ProfileState, formData: FormData): Promise<ProfileState> { const full_name = String(formData.get("fullName") ?? "").trim(); const group_name = String(formData.get("groupName") ?? "").trim() || null; const phone = String(formData.get("phone") ?? "").trim() || null; if (full_name.length < 2) return { status: "error", message: "Enter your full name." }; const supabase = await createClient(); const { data: { user } } = await supabase.auth.getUser(); if (!user) return { status: "error", message: "Your session has expired. Please sign in again." }; const { error } = await supabase.from("profiles").update({ full_name, group_name, phone }).eq("id", user.id); if (error) { console.error("Profile update failed", { code: error.code }); return { status: "error", message: "Your profile could not be saved. Please try again." }; } revalidatePath("/", "layout"); return { status: "success", message: "Profile saved." }; }

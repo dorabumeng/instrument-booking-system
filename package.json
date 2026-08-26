@@ -1,0 +1,48 @@
+{
+  "name": "lab-schedule",
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "private": true,
+  "scripts": {
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start",
+  "lint": "eslint .",
+  "typecheck": "tsc --noEmit",
+  "test": "node --experimental-strip-types --test tests/admin-logic.test.ts",
+  "test:integration": "node --env-file=.env.local --experimental-strip-types --test tests/integration/*.integration.test.ts",
+  "types": "supabase gen types typescript --linked > types/database.generated.ts",
+  "db": "supabase db reset",
+  "db:push": "supabase db push --dry-run"
+},
+  "dependencies": {
+    "@fullcalendar/core": "^6.1.19",
+    "@fullcalendar/daygrid": "^6.1.19",
+    "@fullcalendar/interaction": "^6.1.19",
+    "@fullcalendar/luxon3": "6.1.19",
+    "@fullcalendar/react": "^6.1.19",
+    "@fullcalendar/timegrid": "^6.1.19",
+    "@supabase/ssr": "^0.7.0",
+    "@supabase/supabase-js": "^2.56.0",
+    "luxon": "3.7.2",
+    "next": "^15.5.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
+    "@tailwindcss/postcss": "^4.1.12",
+    "@types/luxon": "3.7.1",
+    "@types/node": "^22.18.0",
+    "@types/react": "^19.1.12",
+    "@types/react-dom": "^19.1.9",
+    "eslint": "^9.34.0",
+    "eslint-config-next": "^15.5.0",
+    "supabase": "^2.115.0",
+    "tailwindcss": "^4.1.12",
+    "typescript": "^5.9.2"
+  }
+}

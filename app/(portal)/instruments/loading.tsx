@@ -1,0 +1,1 @@
+export default function InstrumentsLoading() { return <div className="animate-pulse"><div className="mb-8 h-12 w-72 rounded bg-slate-200"/><div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">{[1,2,3,4,5,6].map(item => <div key={item} className="h-80 rounded-2xl bg-white"/>)}</div></div>; }

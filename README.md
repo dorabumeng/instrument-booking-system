@@ -1,4 +1,4 @@
-# CoreLab Scheduler
+# 南方科技大学-低维磁性材料实验室预约系统
 
 A production-oriented university laboratory instrument booking system built with Next.js 15, TypeScript, the App Router, Tailwind CSS, FullCalendar, PostgreSQL, and Supabase. Phase 3 provides live normal-user instrument discovery, availability calendars, and booking management on top of the Phase 2 authentication and RLS foundation.
 
@@ -97,7 +97,7 @@ The authoritative overlap rule is the PostgreSQL GiST exclusion constraint on `i
 
 ### 8. Privacy-safe calendar availability
 
-Direct `bookings` queries return complete rows only to the owner or an administrator. Other members obtain occupied ranges through `get_instrument_availability(instrument_id, range_start, range_end)`. This tightly scoped `SECURITY DEFINER` RPC verifies authentication, limits requests to 93 days, and returns only booking ID, instrument ID, start/end time, and confirmed status. It never selects or transmits user ID, sample name, purpose, notes, email, phone, or other profile data.
+Direct `bookings` queries return complete rows only to the owner or an administrator. Other members obtain occupied ranges through `get_instrument_availability(instrument_id, range_start, range_end)`. This tightly scoped `SECURITY DEFINER` RPC verifies authentication, limits requests to 93 days, and returns only booking ID, instrument ID, start/end time, confirmed status, and the reserver's full name. It never selects or transmits user ID, sample name, purpose, notes, email, phone, or other profile data.
 
 ## Architecture
 
@@ -119,7 +119,7 @@ Review the generated import transition before deleting `types/database.ts`.
 
 ## Booking workflow
 
-Instrument lists, details, dashboard summaries, and personal booking history are read from Supabase. The instrument calendar uses FullCalendar with month, week, and day views. Each visible range calls `get_instrument_availability`; the browser separately requests the current user’s own complete bookings under RLS and merges them by ID. This displays private details only for the owner and generic “Occupied” events for everyone else.
+Instrument lists, details, dashboard summaries, and personal booking history are read from Supabase. The instrument calendar uses FullCalendar with month, week, and day views. Each visible range calls `get_instrument_availability`; the browser separately requests the current user’s own complete bookings under RLS and merges them by ID. This displays private booking details only for the owner while all authenticated calendar viewers can see the reserver's name.
 
 Create, edit, and cancel operations are server actions. They revalidate identity, normalize browser-local inputs to ISO timestamps, check instrument state, apply shared length/time validation, and let PostgreSQL/RLS make the authoritative decision. PostgreSQL error codes are centrally translated into safe application messages. Normal users cancel by setting `status = 'cancelled'`; records are never deleted.
 
@@ -204,3 +204,11 @@ RUN_SUPABASE_INTEGRATION=true pnpm run test:integration
 ```
 
 The interim `types/database.ts` remains until types are generated from a linked staging database and reconciled. Never commit `.env.local`, service-role keys, staging test credentials, or database passwords.
+
+## Booking rules, university ledger, and languages
+
+Migration `202608260008_booking_rules_and_ledger.sql` adds per-instrument interval/minimum/optional maximum rules and the admin-only `booking_ledger_details` table. Slot alignment is evaluated in the database's reviewed `private.lab_timezone()` function (`Asia/Shanghai`), while duration uses absolute elapsed minutes. Existing records are not rewritten; rules apply when a confirmed booking is created or its instrument/time/status is edited.
+
+The admin booking page requires laboratory-local start/end dates before producing a server-authorized `.xlsx` workbook. It generates one `YYYY年度` sheet per selected year, preserves the required A–R order and row-2 instructions, and includes cancelled records when the status filter requests them. Profile name/affiliation currently reflect their value at export time; they are not historical snapshots.
+
+The application brand is **南方科技大学-低维磁性材料实验室预约系统** / **SUSTech Low-Dimensional Magnetic Materials Laboratory Booking System**. Chinese is the default language; the navigation switch stores `locale=zh|en` in a SameSite cookie so server rendering and FullCalendar locale agree before hydration. Canonical database enums remain English.

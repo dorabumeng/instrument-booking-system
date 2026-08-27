@@ -3,4 +3,4 @@ export interface Booking { id: string; instrument_id: string; user_id: string; s
 export interface BookingWithInstrument extends Booking { instrument: import("./instrument").Instrument; }
 export type BookingInput = { startTime: string; endTime: string; sampleName: string; purpose: string; notes: string };
 export type CalendarBooking = Pick<Booking, "id" | "instrument_id" | "start_time" | "end_time" | "sample_name" | "purpose" | "notes" | "status">;
-export interface AdminBooking extends Booking { instrument: import("./instrument").Instrument; user: import("./database").Profile; }
+export interface AdminBooking extends Booking { instrument: import("./instrument").Instrument; user: import("./database").Profile; ledger: import("./ledger").LedgerDetail | null; }

@@ -1,0 +1,3 @@
+import test from "node:test"; import assert from "node:assert/strict"; import { dictionaries } from "../lib/i18n/dictionaries.ts";
+test("Chinese and English dictionaries have identical complete keys", () => { assert.deepEqual(Object.keys(dictionaries.zh).sort(), Object.keys(dictionaries.en).sort()); assert.ok(Object.values(dictionaries.zh).every(Boolean)); assert.ok(Object.values(dictionaries.en).every(Boolean)); });
+test("security-sensitive public errors are localized", () => { for (const key of ["error.BOOKING_CONFLICT", "error.INSTRUMENT_UNAVAILABLE", "error.VALIDATION_ERROR", "error.FORBIDDEN", "error.NOT_FOUND", "error.LAST_ADMIN"] as const) { assert.notEqual(dictionaries.zh[key], dictionaries.en[key]); } });

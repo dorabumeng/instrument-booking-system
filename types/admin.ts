@@ -3,7 +3,7 @@ import type { Instrument, InstrumentStatus } from "./instrument";
 
 export type AdminErrorCode = "VALIDATION_ERROR" | "NOT_FOUND" | "FORBIDDEN" | "CONFLICT" | "LAST_ADMIN" | "HAS_FUTURE_BOOKINGS" | "DATABASE_ERROR";
 export type AdminResult<T> = { success: true; data: T; message: string } | { success: false; code: AdminErrorCode; message: string; fieldErrors?: Record<string, string>; futureBookingCount?: number };
-export type InstrumentAdminInput = { name: string; description: string; location: string; manager: string; status: InstrumentStatus; imageUrl: string };
+export type InstrumentAdminInput = { name: string; description: string; location: string; manager: string; status: InstrumentStatus; imageUrl: string; assetNumber: string; bookingSlotMinutes: number | null; minBookingMinutes: number | null; maxBookingMinutes: number | null };
 export type AdminInstrument = Instrument & { future_booking_count: number };
 export type AdminUser = Profile;
 export type RoleChangeInput = { userId: string; role: UserRole; confirmed: boolean };

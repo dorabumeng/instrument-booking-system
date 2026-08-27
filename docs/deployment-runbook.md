@@ -58,7 +58,7 @@ Confirm exactly two intended rows before commit. There is no public bootstrap en
 
 Store `SUPABASE_TEST_URL`, `SUPABASE_TEST_ANON_KEY`, and `SUPABASE_TEST_SERVICE_ROLE_KEY` in a protected GitHub Environment named `staging`, then manually run **Staging integration tests**. The suite provisions unique users, authenticates via the anon client, tests direct Data API RLS attempts, overlap races and adjacency, instrument status enforcement, privacy RPC shape, audit access, admin operations, and final-admin protection. The service key is used only for test fixture lifecycle.
 
-Run `docs/production-smoke-test.md` against deployed staging. Inspect Network responses for the exact availability keys: `booking_id`, `instrument_id`, `start_time`, `end_time`, `status`. No owner ID, profile, sample, purpose, or notes may be present.
+Run `docs/production-smoke-test.md` against deployed staging. Inspect Network responses for the exact availability keys: `booking_id`, `instrument_id`, `start_time`, `end_time`, `status`, `reserver_name`. No owner ID, email, sample, purpose, notes, or other profile fields may be present.
 
 Test with a browser timezone different from the laboratory timezone. Verify the visible zone, cross-midnight reservations, and—if the selected zone observes DST—spring-forward invalid wall times and fall-back ambiguity with lab operators. The database stores absolute `timestamptz`; operational days, calendar, and forms use the fixed lab zone.
 

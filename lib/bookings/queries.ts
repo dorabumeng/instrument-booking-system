@@ -15,13 +15,31 @@ export async function getMyBookings(limit?: number): Promise<QueryResult<Booking
 export type DashboardSummary = { availableInstruments: number; upcomingCount: number; nextBooking: BookingWithInstrument | null; recentBookings: BookingWithInstrument[] };
 export async function getDashboardSummary(): Promise<QueryResult<DashboardSummary>> {
   const supabase = await createClient(); const now = new Date().toISOString();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) return { data: null, error: "Your session has expired. Please sign in again." };
+
   const [available, upcoming, next, recent] = await Promise.all([
     supabase.from("instruments").select("id", { count: "exact", head: true }).eq("status", "available"),
-    supabase.from("bookings").select("id", { count: "exact", head: true }).eq("status", "confirmed").gte("end_time", now),
-    supabase.from("bookings").select("*, instrument:instruments(*)").eq("status", "confirmed").gte("end_time", now).order("start_time").limit(1).maybeSingle(),
-    supabase.from("bookings").select("*, instrument:instruments(*)").order("updated_at", { ascending: false }).limit(3),
+    supabase.from("bookings").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("status", "confirmed").gte("end_time", now),
+    supabase.from("bookings").select("*, instrument:instruments(*)").eq("user_id", user.id).eq("status", "confirmed").gte("end_time", now).order("start_time").limit(1).maybeSingle(),
+    supabase.from("bookings").select("*, instrument:instruments(*)").eq("user_id", user.id).order("updated_at", { ascending: false }).limit(3),
   ]);
-  const error = available.error ?? upcoming.error ?? next.error ?? recent.error;
-  if (error) { console.error("Dashboard query failed", { code: error.code }); return { data: null, error: "Dashboard information could not be loaded." }; }
+  const failed = [
+    { query: "availableInstruments", error: available.error },
+    { query: "upcomingBookings", error: upcoming.error },
+    { query: "nextBooking", error: next.error },
+    { query: "recentBookings", error: recent.error },
+  ].find((entry) => entry.error);
+  if (failed) {
+    const { query, error } = failed;
+    console.error("Dashboard query failed", {
+      query,
+      code: error?.code,
+      message: error?.message,
+      details: error?.details,
+      hint: error?.hint,
+    });
+    return { data: null, error: "Dashboard information could not be loaded." };
+  }
   return { data: { availableInstruments: available.count ?? 0, upcomingCount: upcoming.count ?? 0, nextBooking: next.data, recentBookings: recent.data ?? [] }, error: null };
 }

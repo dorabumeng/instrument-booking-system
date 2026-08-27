@@ -1,4 +1,7 @@
+"use client";
 import type { BookingWithInstrument } from "@/types/booking";
+import { useI18n } from "@/lib/i18n/client";
 export default function BookingList({ items }: { items: BookingWithInstrument[] }) {
-  return <div className="divide-y divide-slate-100">{items.map((b) => <article key={b.id} className="grid gap-3 py-5 first:pt-0 sm:grid-cols-[7rem_1fr_auto] sm:items-center"><div><p className="text-sm font-black text-teal-800">{new Date(b.start_time).toLocaleDateString("en", { month: "short", day: "numeric" })}</p><p className="text-xs text-slate-500">{new Date(b.start_time).toLocaleTimeString("en", { hour: "numeric", minute: "2-digit" })}</p></div><div><h3 className="font-bold">{b.instrument.name}</h3><p className="mt-1 text-sm text-slate-500">{b.sample_name} · {b.instrument.location}</p></div><span className="status status-available">{b.status}</span></article>)}</div>;
+  const { locale, t } = useI18n(); const dateLocale = locale === "zh" ? "zh-CN" : "en-US";
+  return <div className="divide-y divide-slate-100">{items.map((b) => <article key={b.id} className="grid gap-3 py-5 first:pt-0 sm:grid-cols-[7rem_1fr_auto] sm:items-center"><div><p className="text-sm font-black text-teal-800">{new Date(b.start_time).toLocaleDateString(dateLocale, { month: "short", day: "numeric" })}</p><p className="text-xs text-slate-500">{new Date(b.start_time).toLocaleTimeString(dateLocale, { hour: "numeric", minute: "2-digit" })}</p></div><div><h3 className="font-bold">{b.instrument.name}</h3><p className="mt-1 text-sm text-slate-500">{b.sample_name} · {b.instrument.location}</p></div><span className="status status-available">{t(`bookings.${b.status}` as "bookings.confirmed"|"bookings.cancelled"|"bookings.completed")}</span></article>)}</div>;
 }

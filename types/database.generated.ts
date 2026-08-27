@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.15"
+    PostgrestVersion: "14.17"
   }
   graphql_public: {
     Tables: {
@@ -71,6 +71,69 @@ export type Database = {
           {
             foreignKeyName: "audit_logs_actor_user_id_fkey"
             columns: ["actor_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      booking_ledger_details: {
+        Row: {
+          billing_status: Database["public"]["Enums"]["billing_status"]
+          booking_id: string
+          contract_amount: number | null
+          contract_status: Database["public"]["Enums"]["contract_status"]
+          created_at: string
+          evaluation_status: Database["public"]["Enums"]["evaluation_status"]
+          payer_name: string | null
+          payer_organization: string | null
+          sample_count: number
+          statistical_hours: number | null
+          survey_status: Database["public"]["Enums"]["survey_status"]
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          billing_status?: Database["public"]["Enums"]["billing_status"]
+          booking_id: string
+          contract_amount?: number | null
+          contract_status?: Database["public"]["Enums"]["contract_status"]
+          created_at?: string
+          evaluation_status?: Database["public"]["Enums"]["evaluation_status"]
+          payer_name?: string | null
+          payer_organization?: string | null
+          sample_count?: number
+          statistical_hours?: number | null
+          survey_status?: Database["public"]["Enums"]["survey_status"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          billing_status?: Database["public"]["Enums"]["billing_status"]
+          booking_id?: string
+          contract_amount?: number | null
+          contract_status?: Database["public"]["Enums"]["contract_status"]
+          created_at?: string
+          evaluation_status?: Database["public"]["Enums"]["evaluation_status"]
+          payer_name?: string | null
+          payer_organization?: string | null
+          sample_count?: number
+          statistical_hours?: number | null
+          survey_status?: Database["public"]["Enums"]["survey_status"]
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_ledger_details_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: true
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "booking_ledger_details_updated_by_fkey"
+            columns: ["updated_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -153,36 +216,48 @@ export type Database = {
       instruments: {
         Row: {
           archived_at: string | null
+          asset_number: string | null
+          booking_slot_minutes: number
           created_at: string
           description: string
           id: string
           image_url: string | null
           location: string
           manager: string
+          max_booking_minutes: number | null
+          min_booking_minutes: number
           name: string
           status: Database["public"]["Enums"]["instrument_status"]
           updated_at: string
         }
         Insert: {
           archived_at?: string | null
+          asset_number?: string | null
+          booking_slot_minutes?: number
           created_at?: string
           description?: string
           id?: string
           image_url?: string | null
           location: string
           manager: string
+          max_booking_minutes?: number | null
+          min_booking_minutes?: number
           name: string
           status?: Database["public"]["Enums"]["instrument_status"]
           updated_at?: string
         }
         Update: {
           archived_at?: string | null
+          asset_number?: string | null
+          booking_slot_minutes?: number
           created_at?: string
           description?: string
           id?: string
           image_url?: string | null
           location?: string
           manager?: string
+          max_booking_minutes?: number | null
+          min_booking_minutes?: number
           name?: string
           status?: Database["public"]["Enums"]["instrument_status"]
           updated_at?: string
@@ -244,14 +319,19 @@ export type Database = {
           booking_id: string
           end_time: string
           instrument_id: string
+          reserver_name: string
           start_time: string
           status: Database["public"]["Enums"]["booking_status"]
         }[]
       }
     }
     Enums: {
+      billing_status: "pending" | "charged" | "exempt" | "not_applicable"
       booking_status: "confirmed" | "cancelled" | "completed"
+      contract_status: "signed" | "not_signed" | "not_required"
+      evaluation_status: "submitted" | "not_submitted" | "not_required"
       instrument_status: "available" | "maintenance" | "unavailable"
+      survey_status: "completed" | "not_completed" | "not_required"
       user_role: "user" | "admin"
     }
     CompositeTypes: {
@@ -383,8 +463,12 @@ export const Constants = {
   },
   public: {
     Enums: {
+      billing_status: ["pending", "charged", "exempt", "not_applicable"],
       booking_status: ["confirmed", "cancelled", "completed"],
+      contract_status: ["signed", "not_signed", "not_required"],
+      evaluation_status: ["submitted", "not_submitted", "not_required"],
       instrument_status: ["available", "maintenance", "unavailable"],
+      survey_status: ["completed", "not_completed", "not_required"],
       user_role: ["user", "admin"],
     },
   },

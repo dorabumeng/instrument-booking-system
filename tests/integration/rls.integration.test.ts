@@ -40,7 +40,7 @@ integration("normal-user RLS, privacy RPC, and concurrent overlap enforcement", 
   const attempts = await Promise.all([userA, userB].map((client, index) => client.from("bookings").insert({ instrument_id: instrumentId, user_id: index ? userBId : userAId, start_time: start, end_time: end, sample_name: `sample-${index}`, purpose: "Concurrent integration test" }).select("id").single()));
   assert.equal(attempts.filter(item => !item.error).length, 1); assert.equal(attempts.filter(item => item.error?.code === "23P01").length, 1);
   const otherId = attempts[1].data?.id ?? attempts[0].data!.id; const otherRead = await userA.from("bookings").select("*").eq("id", otherId); if (attempts[1].data) assert.equal(otherRead.data?.length, 0);
-  const availability = await userA.rpc("get_instrument_availability", { requested_instrument_id: instrumentId, range_start: "2035-06-01T00:00:00Z", range_end: "2035-06-02T00:00:00Z" }); assert.ifError(availability.error); assert.deepEqual(Object.keys(availability.data![0]).sort(), ["booking_id", "end_time", "instrument_id", "start_time", "status"]);
+  const availability = await userA.rpc("get_instrument_availability", { requested_instrument_id: instrumentId, range_start: "2035-06-01T00:00:00Z", range_end: "2035-06-02T00:00:00Z" }); assert.ifError(availability.error); assert.deepEqual(Object.keys(availability.data![0]).sort(), ["booking_id", "end_time", "instrument_id", "reserver_name", "start_time", "status"]); assert.match(availability.data![0].reserver_name, /^user-[ab]$/);
   const fakeOwner = await userA.from("bookings").insert({ instrument_id: instrumentId, user_id: userBId, start_time: "2035-06-02T01:00:00Z", end_time: "2035-06-02T02:00:00Z", sample_name: "forbidden", purpose: "Must fail" }); assert.ok(fakeOwner.error);
   const auditRead = await userA.from("audit_logs").select("id"); assert.ok(auditRead.error || auditRead.data.length === 0);
   const fakeAudit = await userA.from("audit_logs").insert({ action: "fake", entity_type: "test" }); assert.ok(fakeAudit.error);
@@ -49,7 +49,8 @@ integration("normal-user RLS, privacy RPC, and concurrent overlap enforcement", 
 integration("back-to-back succeeds, contained overlap fails, status blocks writes, and admin privileges work", async () => {
   const first = await userA.from("bookings").insert({ instrument_id: instrumentId, user_id: userAId, start_time: "2035-07-01T01:00:00Z", end_time: "2035-07-01T02:00:00Z", sample_name: "Sample-A", purpose: "Boundary test" }).select("id").single(); assert.ifError(first.error);
   const adjacent = await userB.from("bookings").insert({ instrument_id: instrumentId, user_id: userBId, start_time: "2035-07-01T02:00:00Z", end_time: "2035-07-01T03:00:00Z", sample_name: "Sample-B", purpose: "Boundary test" }).select("id").single(); assert.ifError(adjacent.error);
-  const contained = await userB.from("bookings").insert({ instrument_id: instrumentId, user_id: userBId, start_time: "2035-07-01T01:15:00Z", end_time: "2035-07-01T01:45:00Z", sample_name: "Sample-C", purpose: "Overlap test" }); assert.equal(contained.error?.code, "23P01");
+  const misaligned = await userB.from("bookings").insert({ instrument_id: instrumentId, user_id: userBId, start_time: "2035-07-01T01:15:00Z", end_time: "2035-07-01T01:45:00Z", sample_name: "Sample-C", purpose: "Slot-alignment test" }); assert.equal(misaligned.error?.code, "23514");
+  const contained = await userB.from("bookings").insert({ instrument_id: instrumentId, user_id: userBId, start_time: "2035-07-01T01:30:00Z", end_time: "2035-07-01T02:00:00Z", sample_name: "Sample-D", purpose: "Aligned overlap test" }); assert.equal(contained.error?.code, "23P01");
   const userCancel = await userA.from("bookings").update({ status: "cancelled", cancellation_reason: null }).eq("id", first.data.id).select("status,cancelled_at,cancelled_by").single(); assert.ifError(userCancel.error); assert.equal(userCancel.data.cancelled_by, userAId); assert.ok(userCancel.data.cancelled_at);
   const immutable = await userA
   .from("bookings")
@@ -78,8 +79,21 @@ assert.equal(verifyImmutable.data.sample_name, "Sample-A");
   const logs = await adminA.from("audit_logs").select("action").eq("entity_id", instrumentId); assert.ifError(logs.error); assert.ok(logs.data.some(item => item.action === "instrument_status_changed"));
 });
 
-integration("database prevents demotion of the final administrator", async () => {
+integration("database prevents demotion of the final administrator", async (context) => {
+  const administrators = await service.from("profiles").select("id").eq("role", "admin");
+  assert.ifError(administrators.error);
+  const administratorIds = new Set(administrators.data.map(({ id }) => id));
+  const hasOnlyTemporaryAdministrators = administratorIds.size === 2 && administratorIds.has(adminAId) && administratorIds.has(adminBId);
+
+  if (!hasOnlyTemporaryAdministrators) {
+    context.skip("Shared staging contains unrelated administrators; LAST_ADMIN requires an isolated test database.");
+    return;
+  }
+
   const demoteB = await adminA.from("profiles").update({ role: "user" }).eq("id", adminBId); assert.ifError(demoteB.error);
-  const demoteSelf = await adminA.from("profiles").update({ role: "user" }).eq("id", adminAId); assert.match(demoteSelf.error?.message ?? "", /LAST_ADMIN/);
-  const restore = await service.from("profiles").update({ role: "admin" }).eq("id", adminBId); assert.ifError(restore.error);
+  try {
+    const demoteSelf = await adminA.from("profiles").update({ role: "user" }).eq("id", adminAId); assert.match(demoteSelf.error?.message ?? "", /LAST_ADMIN/);
+  } finally {
+    const restore = await service.from("profiles").update({ role: "admin" }).in("id", [adminAId, adminBId]); assert.ifError(restore.error);
+  }
 });

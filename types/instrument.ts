@@ -1,2 +1,2 @@
 export type InstrumentStatus = "available" | "maintenance" | "unavailable";
-export interface Instrument { id: string; name: string; description: string; location: string; manager: string; status: InstrumentStatus; image_url: string | null; archived_at: string | null; created_at: string; updated_at: string; }
+export interface Instrument { id: string; name: string; description: string; location: string; manager: string; status: InstrumentStatus; image_url: string | null; archived_at: string | null; asset_number: string | null; booking_slot_minutes: number; min_booking_minutes: number; max_booking_minutes: number | null; created_at: string; updated_at: string; }

@@ -159,6 +159,12 @@ Role changes require an authenticated administrator and explicit confirmation. `
 
 The first administrator procedure earlier in this README remains the bootstrap path. There is no public promotion endpoint.
 
+### Production user lifecycle and booking history
+
+Production accounts with laboratory history must be disabled rather than deleted. Disable sign-in through the trusted Supabase Auth administrator workflow and retain the profile; the application does not expose a profile-delete endpoint and does not automatically disable Auth accounts.
+
+The `bookings.user_id` foreign key uses `ON DELETE RESTRICT`. Consequently, deleting either a profile with bookings or its parent `auth.users` row fails and leaves the profile, bookings, one-to-one ledger details, and audit history intact. A profile without booking history can still be deleted by a trusted Auth/owner operation. Database triggers independently reject both demotion and deletion of the final administrator with `LAST_ADMIN`; a non-final administrator can be deleted only when another administrator remains and no booking history references that profile.
+
 ### Audit log
 
 `audit_logs` is append-only from the application perspective. Database triggers record instrument creation/update/status/archive actions, booking creation/update/cancellation, administrative cancellation, and role changes. Actors come from the authenticated database context. Normal users have no audit grants or policies; administrators receive read-only access.

@@ -1,0 +1,6 @@
+export const bookingStatusLabels: Record<string, string> = { confirmed: "已确认", cancelled: "已取消", completed: "已完成", pending: "待处理", available: "可预约", maintenance: "维护中", unavailable: "不可预约" };
+export const roleLabels: Record<string, string> = { admin: "管理员", user: "普通用户" };
+export const ledgerValueLabels: Record<string, string> = { pending: "待处理", charged: "已计费", exempt: "免计费", not_applicable: "不适用", signed: "已签署", not_signed: "未签署", not_required: "无需提供", submitted: "已提交", not_submitted: "未提交", completed: "已完成", not_completed: "未完成" };
+export const auditActionLabels: Record<string, string> = { instrument_created: "创建仪器", instrument_updated: "修改仪器", instrument_status_changed: "修改仪器状态", instrument_archived: "归档仪器", booking_created: "创建预约", booking_updated: "修改预约", booking_cancelled: "取消预约", admin_booking_cancelled: "管理员取消预约", user_role_changed: "修改用户角色" };
+export function formatAdminDate(value: string) { return new Intl.DateTimeFormat("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(value)); }
+export function formatAdminDateTime(value: string) { return new Intl.DateTimeFormat("zh-CN", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(value)); }

@@ -1,4 +1,5 @@
 import "server-only";
+import { validateSupabaseUrl } from "@/lib/supabase/env";
 
 let validated: { supabaseUrl: string; supabaseAnonKey: string; labTimezone: string } | undefined;
 
@@ -18,7 +19,7 @@ export function getServerEnvironment() {
   try { new Intl.DateTimeFormat("en-US", { timeZone: labTimezone }).format(); }
   catch { throw new Error("LAB_TIMEZONE must be a valid IANA timezone identifier."); }
   if (labTimezone !== publicLabTimezone) throw new Error("LAB_TIMEZONE and NEXT_PUBLIC_LAB_TIMEZONE must match.");
-  validated = { supabaseUrl: supabaseUrl!, supabaseAnonKey: supabaseAnonKey!, labTimezone: labTimezone! };
+  validated = { supabaseUrl: validateSupabaseUrl(supabaseUrl!), supabaseAnonKey: supabaseAnonKey!, labTimezone: labTimezone! };
   return validated;
 }
 

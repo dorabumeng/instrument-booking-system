@@ -46,6 +46,30 @@ integration("normal-user RLS, privacy RPC, and concurrent overlap enforcement", 
   const fakeAudit = await userA.from("audit_logs").insert({ action: "fake", entity_type: "test" }); assert.ok(fakeAudit.error);
 });
 
+integration("public signup creates the matching profile through the Auth trigger", async () => {
+  const emailDomain = process.env.SUPABASE_TEST_EMAIL_DOMAIN ?? "example.com";
+  const email = `public-signup-${suffix}@${emailDomain}`;
+  const signupClient = createClient<Database>(required("SUPABASE_TEST_URL"), required("SUPABASE_TEST_ANON_KEY"), {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const signup = await signupClient.auth.signUp({
+    email,
+    password,
+    options: { data: { full_name: "Public signup test" } },
+  });
+  assert.ifError(signup.error);
+  assert.ok(signup.data.user?.id);
+
+  const userId = signup.data.user!.id;
+  try {
+    const profile = await service.from("profiles").select("id,email,full_name,role").eq("id", userId).single();
+    assert.ifError(profile.error);
+    assert.deepEqual(profile.data, { id: userId, email, full_name: "Public signup test", role: "user" });
+  } finally {
+    await service.auth.admin.deleteUser(userId);
+  }
+});
+
 integration("back-to-back succeeds, contained overlap fails, status blocks writes, and admin privileges work", async () => {
   const first = await userA.from("bookings").insert({ instrument_id: instrumentId, user_id: userAId, start_time: "2035-07-01T01:00:00Z", end_time: "2035-07-01T02:00:00Z", sample_name: "Sample-A", purpose: "Boundary test" }).select("id").single(); assert.ifError(first.error);
   const adjacent = await userB.from("bookings").insert({ instrument_id: instrumentId, user_id: userBId, start_time: "2035-07-01T02:00:00Z", end_time: "2035-07-01T03:00:00Z", sample_name: "Sample-B", purpose: "Boundary test" }).select("id").single(); assert.ifError(adjacent.error);

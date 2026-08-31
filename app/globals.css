@@ -19,5 +19,15 @@ button, input, select, textarea { font: inherit; }
 .calendar-wrap .fc .fc-toolbar { gap: .75rem; flex-wrap: wrap; }
 .calendar-wrap .fc .fc-toolbar-title { font-size: 1.1rem; }
 .calendar-wrap .fc .fc-button { border-radius: .55rem; font-weight: 700; }
-.calendar-wrap .fc-event { border-radius: .35rem; padding: 1px 3px; cursor: pointer; }
+.calendar-wrap .fc .fc-timegrid-slot { height: 2rem; }
+.calendar-wrap .fc .fc-timegrid-slot-label { color: #526765; font-size: .76rem; font-variant-numeric: tabular-nums; }
+.calendar-wrap .fc .fc-timegrid-slot-label-cushion { padding: 0 .55rem; }
+.calendar-wrap .fc .fc-timegrid-slot-minor { border-top-style: dotted; border-top-color: #e8efed; }
+.calendar-wrap .fc .fc-timegrid-col-frame { min-width: 0; }
+.calendar-wrap .fc .fc-timegrid-event-harness { margin-right: 2px; }
+.calendar-wrap .fc-event { border-radius: .4rem; padding: 2px 4px; cursor: pointer; box-shadow: 0 1px 2px rgba(16,42,43,.18); }
+.calendar-wrap .fc .fc-timegrid-event { min-height: 100%; }
+.calendar-wrap .fc .fc-event-time { font-size: .72rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.calendar-wrap .fc .fc-event-title { margin-top: 1px; font-weight: 700; line-height: 1.25; }
+.calendar-wrap .fc .fc-timegrid-now-indicator-line { border-width: 2px 0 0; }
 @media (max-width: 640px) { .calendar-wrap .fc .fc-toolbar { align-items: stretch; flex-direction: column; } .calendar-wrap .fc .fc-toolbar-chunk { display: flex; justify-content: center; } .calendar-wrap .fc { font-size: .75rem; } }

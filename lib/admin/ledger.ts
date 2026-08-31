@@ -1,18 +1,19 @@
 import "server-only";
-import ExcelJS from "exceljs";
 import { DateTime } from "luxon";
 import { getAdminContext } from "./auth";
 import type { AdminBooking } from "@/types/booking";
 
-export const LEDGER_HEADERS = ["序号", "使用编号", "仪器名称", "资产编号", "使用者", "所属单位", "使用开始时间", "使用结束时间", "使用时长（小时）", "统计时长（小时）", "样品数", "付费人", "付费人机构", "扣费状态", "是否签订合同", "合同金额（元）", "用户评价表", "用户调研"] as const;
-const billing = { pending: "待扣费", charged: "已扣费", exempt: "免收费", not_applicable: "不适用" } as const;
-const contract = { signed: "是", not_signed: "否", not_required: "无需填写" } as const;
-const evaluation = { submitted: "已提交", not_submitted: "未提交", not_required: "无需填写" } as const;
-const survey = { completed: "已完成", not_completed: "未完成", not_required: "无需填写" } as const;
-export function usageNumber(item: Pick<AdminBooking, "id" | "start_time" | "instrument">, zone: string) { const date = DateTime.fromISO(item.start_time).setZone(zone).toFormat("yyyyLLdd"); const code = item.instrument.name.replace(/[^A-Za-z0-9]/g, "").slice(0, 4).toUpperCase() || "INST"; return `${date}-${code}-${item.id.replaceAll("-", "").slice(0, 6).toUpperCase()}`; }
-export function durationHours(start: string, end: string) { return Math.round(((new Date(end).getTime() - new Date(start).getTime()) / 3600000) * 1000) / 1000; }
-export function ledgerRow(item: AdminBooking, index: number, zone: string) { const hours = durationHours(item.start_time, item.end_time); const detail = item.ledger; return [index, usageNumber(item, zone), item.instrument.name, item.instrument.asset_number ?? "", item.user.full_name, item.user.group_name ?? "", DateTime.fromISO(item.start_time).setZone(zone).toFormat("yyyy-LL-dd HH:mm"), DateTime.fromISO(item.end_time).setZone(zone).toFormat("yyyy-LL-dd HH:mm"), hours, detail?.statistical_hours ?? hours, item.sample_count ?? detail?.sample_count ?? 1, detail?.payer_name ?? "", detail?.payer_organization ?? "", billing[detail?.billing_status ?? "pending"], contract[detail?.contract_status ?? "not_required"], detail?.contract_amount ?? null, evaluation[detail?.evaluation_status ?? "not_required"], survey[detail?.survey_status ?? "not_required"]]; }
-export async function getLedgerBookings({ from, to, instrument, user, status, zone }: { from: string; to: string; instrument?: string; user?: string; status?: string; zone: string }) { const context = await getAdminContext(); if (!context) return { data: null, error: "FORBIDDEN" }; const start = DateTime.fromISO(from, { zone }).startOf("day"); const end = DateTime.fromISO(to, { zone }).plus({ days: 1 }).startOf("day"); if (!start.isValid || !end.isValid || end <= start || end.diff(start, "days").days > 1096) return { data: null, error: "INVALID_RANGE" }; let query = context.supabase.from("bookings").select("*, instrument:instruments(*), user:profiles!bookings_user_id_fkey(*), ledger:booking_ledger_details(*)").gte("start_time", start.toUTC().toISO()!).lt("start_time", end.toUTC().toISO()!).order("start_time").limit(10000); if (instrument) query = query.eq("instrument_id", instrument); if (user) query = query.eq("user_id", user); if (status && ["confirmed", "cancelled", "completed"].includes(status)) query = query.eq("status", status as "confirmed" | "cancelled" | "completed"); const result = await query; if (result.error) { console.error("Ledger export query failed", { code: result.error.code }); return { data: null, error: "DATABASE_ERROR" }; } return { data: result.data as AdminBooking[], error: null };
+export async function getLedgerBookings({ from, to, instrument, user, status, zone }: { from: string; to: string; instrument?: string; user?: string; status?: string; zone: string }) {
+  const context = await getAdminContext();
+  if (!context) return { data: null, error: "FORBIDDEN" };
+  const start = DateTime.fromISO(from, { zone }).startOf("day");
+  const end = DateTime.fromISO(to, { zone }).plus({ days: 1 }).startOf("day");
+  if (!start.isValid || !end.isValid || end <= start || end.diff(start, "days").days > 1096) return { data: null, error: "INVALID_RANGE" };
+  let query = context.supabase.from("bookings").select("*, instrument:instruments(*), user:profiles!bookings_user_id_fkey(*), ledger:booking_ledger_details(*)").gte("start_time", start.toUTC().toISO()!).lt("start_time", end.toUTC().toISO()!).order("start_time").limit(10000);
+  if (instrument) query = query.eq("instrument_id", instrument);
+  if (user) query = query.eq("user_id", user);
+  if (status && ["confirmed", "cancelled", "completed"].includes(status)) query = query.eq("status", status as "confirmed" | "cancelled" | "completed");
+  const result = await query;
+  if (result.error) { console.error("Ledger export query failed", { code: result.error.code }); return { data: null, error: "DATABASE_ERROR" }; }
+  return { data: result.data as AdminBooking[], error: null };
 }
-export async function buildLedgerWorkbook(items: AdminBooking[], zone: string) { const workbook = new ExcelJS.Workbook(); workbook.creator = "SUSTech Low-Dimensional Magnetic Materials Laboratory Booking System"; const years = [...new Set(items.map(item => DateTime.fromISO(item.start_time).setZone(zone).year))].sort(); for (const year of years) { const sheet = workbook.addWorksheet(`${year}年度`, { views: [{ state: "frozen", ySplit: 2 }] }); sheet.addRow([...LEDGER_HEADERS]); sheet.addRow(["系统按所选实验室时区导出；统计时长默认等于使用时长，可由管理员覆盖。", ...Array(13).fill(""), "校外用户按学校要求填写合同、评价与调研信息。", "", "", ""]); sheet.mergeCells("A2:N2"); sheet.mergeCells("O2:R2"); const annual = items.filter(item => DateTime.fromISO(item.start_time).setZone(zone).year === year); annual.forEach((item, index) => sheet.addRow(ledgerRow(item, index + 1, zone))); sheet.getRow(1).font = { bold: true, color: { argb: "FFFFFFFF" } }; sheet.getRow(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0F766E" } }; sheet.getRow(2).alignment = { wrapText: true, vertical: "middle" }; [15, 16, 17, 18].forEach(column => { sheet.getCell(1, column).font = { bold: true, color: { argb: "FFFF0000" } }; }); sheet.columns.forEach((column, index) => { column.width = [7, 22, 22, 16, 14, 20, 20, 20, 14, 14, 10, 14, 20, 14, 16, 16, 16, 14][index]; }); sheet.getColumn(9).numFmt = "0.000"; sheet.getColumn(10).numFmt = "0.000"; sheet.getColumn(16).numFmt = "#,##0.00"; sheet.autoFilter = "A1:R1"; }
-  return workbook.xlsx.writeBuffer(); }

@@ -24,9 +24,9 @@ export interface Database {
         Relationships: [];
       };
       bookings: {
-        Row: { id: string; instrument_id: string; user_id: string; start_time: string; end_time: string; sample_name: string; purpose: string; notes: string | null; status: BookingStatus; cancelled_at: string | null; cancelled_by: string | null; cancellation_reason: string | null; created_at: string; updated_at: string };
-        Insert: { id?: string; instrument_id: string; user_id: string; start_time: string; end_time: string; sample_name: string; purpose: string; notes?: string | null; status?: BookingStatus; cancelled_at?: string | null; cancelled_by?: string | null; cancellation_reason?: string | null; created_at?: string; updated_at?: string };
-        Update: { instrument_id?: string; start_time?: string; end_time?: string; sample_name?: string; purpose?: string; notes?: string | null; status?: BookingStatus; cancelled_at?: string | null; cancelled_by?: string | null; cancellation_reason?: string | null; updated_at?: string };
+        Row: { id: string; instrument_id: string; user_id: string; start_time: string; end_time: string; sample_name: string; sample_count: number; purpose: string; notes: string | null; status: BookingStatus; cancelled_at: string | null; cancelled_by: string | null; cancellation_reason: string | null; created_at: string; updated_at: string };
+        Insert: { id?: string; instrument_id: string; user_id: string; start_time: string; end_time: string; sample_name: string; sample_count?: number; purpose: string; notes?: string | null; status?: BookingStatus; cancelled_at?: string | null; cancelled_by?: string | null; cancellation_reason?: string | null; created_at?: string; updated_at?: string };
+        Update: { instrument_id?: string; start_time?: string; end_time?: string; sample_name?: string; sample_count?: number; purpose?: string; notes?: string | null; status?: BookingStatus; cancelled_at?: string | null; cancelled_by?: string | null; cancellation_reason?: string | null; updated_at?: string };
         Relationships: [{ foreignKeyName: "bookings_instrument_id_fkey"; columns: ["instrument_id"]; isOneToOne: false; referencedRelation: "instruments"; referencedColumns: ["id"] }, { foreignKeyName: "bookings_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] }];
       };
       audit_logs: {

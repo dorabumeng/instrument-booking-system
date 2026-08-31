@@ -9,7 +9,7 @@ export async function loadAvailability(instrumentId: string, rangeStart: Date, r
   const supabase = createClient();
   const [availability, own] = await Promise.all([
     supabase.rpc("get_instrument_availability", { requested_instrument_id: instrumentId, range_start: rangeStart.toISOString(), range_end: rangeEnd.toISOString() }),
-    supabase.from("bookings").select("id,instrument_id,start_time,end_time,sample_name,purpose,notes,status").eq("instrument_id", instrumentId).lt("start_time", rangeEnd.toISOString()).gt("end_time", rangeStart.toISOString()),
+    supabase.from("bookings").select("id,instrument_id,start_time,end_time,sample_name,sample_count,purpose,notes,status").eq("instrument_id", instrumentId).lt("start_time", rangeEnd.toISOString()).gt("end_time", rangeStart.toISOString()),
   ]);
   if (availability.error || own.error) { console.error("Availability load failed", { rpcCode: availability.error?.code, ownCode: own.error?.code }); return { events: [], error: "Calendar availability could not be loaded." }; }
   const ownById = new Map((own.data as CalendarBooking[]).map(booking => [booking.id, booking]));

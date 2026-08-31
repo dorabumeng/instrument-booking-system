@@ -87,7 +87,7 @@ export type Database = {
           evaluation_status: Database["public"]["Enums"]["evaluation_status"]
           payer_name: string | null
           payer_organization: string | null
-          sample_count: number
+          sample_count?: number
           statistical_hours: number | null
           survey_status: Database["public"]["Enums"]["survey_status"]
           updated_at: string
@@ -151,6 +151,7 @@ export type Database = {
           instrument_id: string
           notes: string | null
           purpose: string
+          sample_count?: number
           sample_name: string
           start_time: string
           status: Database["public"]["Enums"]["booking_status"]
@@ -167,6 +168,7 @@ export type Database = {
           instrument_id: string
           notes?: string | null
           purpose: string
+          sample_count: number
           sample_name: string
           start_time: string
           status?: Database["public"]["Enums"]["booking_status"]
@@ -183,6 +185,7 @@ export type Database = {
           instrument_id?: string
           notes?: string | null
           purpose?: string
+          sample_count?: number
           sample_name?: string
           start_time?: string
           status?: Database["public"]["Enums"]["booking_status"]
